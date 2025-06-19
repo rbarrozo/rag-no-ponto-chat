@@ -1,4 +1,3 @@
-
 interface LoginResponse {
   success: boolean;
   token?: string;
@@ -16,7 +15,20 @@ class AuthService {
     ? 'https://your-api-domain.com' 
     : 'http://localhost:3002';
 
+  // Lista fixa de usuários para teste em desenvolvimento
+  private readonly TEST_USERS = [
+    { email: 'admin@teste.com', password: '123456', name: 'Admin' },
+    { email: 'user@teste.com', password: 'senha123', name: 'Usuário Teste' },
+    { email: 'demo@teste.com', password: 'demo', name: 'Demo User' }
+  ];
+
   async login(email: string, password: string): Promise<LoginResponse> {
+    // Em desenvolvimento, usar autenticação simulada
+    if (process.env.NODE_ENV !== 'production') {
+      return this.simulateLogin(email, password);
+    }
+
+    // Lógica de produção
     try {
       const response = await fetch(`${this.API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -29,7 +41,6 @@ class AuthService {
       const data = await response.json();
       
       if (data.success && data.token) {
-        // Store token securely
         this.setAuthToken(data.token);
         return { success: true, token: data.token, message: 'Login realizado com sucesso' };
       } else {
@@ -41,6 +52,30 @@ class AuthService {
     }
   }
 
+  private simulateLogin(email: string, password: string): Promise<LoginResponse> {
+    return new Promise((resolve) => {
+      // Simular delay de rede
+      setTimeout(() => {
+        const user = this.TEST_USERS.find(u => u.email === email && u.password === password);
+        
+        if (user) {
+          const fakeToken = `fake-jwt-token-${Date.now()}`;
+          this.setAuthToken(fakeToken);
+          resolve({ 
+            success: true, 
+            token: fakeToken, 
+            message: `Login simulado realizado com sucesso para ${user.name}` 
+          });
+        } else {
+          resolve({ 
+            success: false, 
+            message: 'Credenciais inválidas. Use: admin@teste.com/123456 ou user@teste.com/senha123' 
+          });
+        }
+      }, 800); // Simular 800ms de delay
+    });
+  }
+
   async makeAuthenticatedRequest(endpoint: string, options: RequestInit = {}): Promise<ApiResponse> {
     const token = this.getAuthToken();
     
@@ -48,6 +83,12 @@ class AuthService {
       throw new Error('Token de autenticação não encontrado');
     }
 
+    // Em desenvolvimento, simular respostas da API
+    if (process.env.NODE_ENV !== 'production') {
+      return this.simulateApiRequest(endpoint, options);
+    }
+
+    // Lógica de produção
     try {
       const response = await fetch(`${this.API_BASE_URL}${endpoint}`, {
         ...options,
@@ -71,8 +112,40 @@ class AuthService {
     }
   }
 
+  private simulateApiRequest(endpoint: string, options: RequestInit): Promise<ApiResponse> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (endpoint === '/ask' && options.method === 'POST') {
+          const responses = [
+            'Esta é uma resposta simulada do chatbot para ambiente de desenvolvimento.',
+            'Olá! Estou funcionando em modo de teste. Como posso ajudá-lo hoje?',
+            'Esta é uma simulação. Em produção, eu me conectaria com a API real.',
+            'Resposta de teste: Tudo funcionando perfeitamente no ambiente de desenvolvimento!'
+          ];
+          
+          const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+          
+          resolve({
+            success: true,
+            data: {
+              answer: {
+                content: randomResponse
+              }
+            },
+            message: 'Resposta simulada gerada com sucesso'
+          });
+        } else {
+          resolve({
+            success: true,
+            data: { message: 'Endpoint simulado' },
+            message: 'Requisição simulada processada'
+          });
+        }
+      }, 1000); // Simular 1 segundo de delay
+    });
+  }
+
   private setAuthToken(token: string): void {
-    // Use sessionStorage for better security than localStorage
     sessionStorage.setItem('auth_token', token);
     sessionStorage.setItem('auth_timestamp', Date.now().toString());
   }
@@ -81,7 +154,6 @@ class AuthService {
     const token = sessionStorage.getItem('auth_token');
     const timestamp = sessionStorage.getItem('auth_timestamp');
     
-    // Token expires after 8 hours
     if (token && timestamp) {
       const tokenAge = Date.now() - parseInt(timestamp);
       const EIGHT_HOURS = 8 * 60 * 60 * 1000;
