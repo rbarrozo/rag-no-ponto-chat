@@ -1,4 +1,3 @@
-
 interface LoginResponse {
   success: boolean;
   token?: string;
@@ -14,7 +13,7 @@ interface ApiResponse {
 class AuthService {
   private readonly API_BASE_URL = process.env.NODE_ENV === 'production' 
     ? 'https://your-api-domain.com' 
-    : 'http://localhost:3002';
+    : '/api'; // Usar proxy em desenvolvimento
 
   // Lista fixa de usuários para teste em desenvolvimento
   private readonly TEST_USERS = [
@@ -28,12 +27,7 @@ class AuthService {
   }
 
   async login(email: string, password: string): Promise<LoginResponse> {
-    // Em desenvolvimento, usar autenticação simulada
-    if (!this.isProduction()) {
-      return this.simulateLogin(email, password);
-    }
-
-    // Lógica de produção
+    // Lógica de produção e desenvolvimento usando o backend real
     try {
       const response = await fetch(`${this.API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -57,30 +51,6 @@ class AuthService {
     }
   }
 
-  private simulateLogin(email: string, password: string): Promise<LoginResponse> {
-    return new Promise((resolve) => {
-      // Simular delay de rede
-      setTimeout(() => {
-        const user = this.TEST_USERS.find(u => u.email === email && u.password === password);
-        
-        if (user) {
-          const fakeToken = `fake-jwt-token-${Date.now()}`;
-          this.setAuthToken(fakeToken);
-          resolve({ 
-            success: true, 
-            token: fakeToken, 
-            message: `Login simulado realizado com sucesso para ${user.name}` 
-          });
-        } else {
-          resolve({ 
-            success: false, 
-            message: 'Credenciais inválidas. Use: admin@teste.com/123456 ou user@teste.com/senha123' 
-          });
-        }
-      }, 800); // Simular 800ms de delay
-    });
-  }
-
   async makeAuthenticatedRequest(endpoint: string, options: RequestInit = {}): Promise<ApiResponse> {
     const token = this.getAuthToken();
     
@@ -88,12 +58,7 @@ class AuthService {
       throw new Error('Token de autenticação não encontrado');
     }
 
-    // Em desenvolvimento, simular respostas da API
-    if (!this.isProduction()) {
-      return this.simulateApiRequest(endpoint, options);
-    }
-
-    // Lógica de produção
+    // Usar o backend real tanto em desenvolvimento quanto em produção
     try {
       const response = await fetch(`${this.API_BASE_URL}${endpoint}`, {
         ...options,
@@ -115,39 +80,6 @@ class AuthService {
       console.error('Erro na requisição autenticada:', error);
       throw error;
     }
-  }
-
-  private simulateApiRequest(endpoint: string, options: RequestInit): Promise<ApiResponse> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (endpoint === '/ask' && options.method === 'POST') {
-          const responses = [
-            'Esta é uma resposta simulada do chatbot para ambiente de desenvolvimento.',
-            'Olá! Estou funcionando em modo de teste. Como posso ajudá-lo hoje?',
-            'Esta é uma simulação. Em produção, eu me conectaria com a API real.',
-            'Resposta de teste: Tudo funcionando perfeitamente no ambiente de desenvolvimento!'
-          ];
-          
-          const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-          
-          resolve({
-            success: true,
-            data: {
-              answer: {
-                content: randomResponse
-              }
-            },
-            message: 'Resposta simulada gerada com sucesso'
-          });
-        } else {
-          resolve({
-            success: true,
-            data: { message: 'Endpoint simulado' },
-            message: 'Requisição simulada processada'
-          });
-        }
-      }, 1000); // Simular 1 segundo de delay
-    });
   }
 
   private setAuthToken(token: string): void {
