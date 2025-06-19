@@ -1,3 +1,4 @@
+
 interface LoginResponse {
   success: boolean;
   token?: string;
@@ -22,9 +23,13 @@ class AuthService {
     { email: 'demo@teste.com', password: 'demo', name: 'Demo User' }
   ];
 
+  private isProduction(): boolean {
+    return process.env.NODE_ENV === 'production';
+  }
+
   async login(email: string, password: string): Promise<LoginResponse> {
     // Em desenvolvimento, usar autenticação simulada
-    if (process.env.NODE_ENV !== 'production') {
+    if (!this.isProduction()) {
       return this.simulateLogin(email, password);
     }
 
@@ -84,7 +89,7 @@ class AuthService {
     }
 
     // Em desenvolvimento, simular respostas da API
-    if (process.env.NODE_ENV !== 'production') {
+    if (!this.isProduction()) {
       return this.simulateApiRequest(endpoint, options);
     }
 
