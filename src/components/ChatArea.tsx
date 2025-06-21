@@ -31,6 +31,10 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
     scrollToBottom();
   }, [messages]);
 
+  const generateUniqueId = () => {
+    return Date.now() + Math.random();
+  };
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -42,7 +46,7 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
     }
 
     const newMessage: Message = {
-      id: messages.length + 1,
+      id: generateUniqueId(),
       content: sanitizedInput,
       sender: 'user',
       timestamp: new Date()
@@ -58,28 +62,25 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
         body: JSON.stringify({ question: sanitizedInput }),
       });
 
+      if (response.success && response.data) {
+        console.log(response.data)
+        const responseText = response.data.answer || "Desculpe, não consegui entender.";
+        
+        // Sanitize the response to prevent XSS
+        const cleanText = sanitizeHtml(responseText)
+          .replace(/\*\*(.*?)\*\*/g, "$1")  // remove negrito markdown **texto**
+          .replace(/\*(.*?)\*/g, "$1");     // remove itálico markdown *texto*
 
-		if (response.success && response.data) {
-			
-			console.log(response.data)
-			//console.log(response.data)
-			const responseText = response.data.answer || "Desculpe, não consegui entender.";
-			
-			// Sanitize the response to prevent XSS
-			const cleanText = sanitizeHtml(responseText)
-			  .replace(/\*\*(.*?)\*\*/g, "$1")  // remove negrito markdown **texto**
-			  .replace(/\*(.*?)\*/g, "$1");     // remove itálico markdown *texto*
-
-			// Criar resposta real do bot
-			const botResponse: Message = {
-			  id: messages.length + 3,
-			  content: cleanText,
-			  sender: 'bot',
-			  timestamp: new Date()
-			};
-			
-			onAddMessage(botResponse);
-			
+        // Criar resposta real do bot
+        const botResponse: Message = {
+          id: generateUniqueId(),
+          content: cleanText,
+          sender: 'bot',
+          timestamp: new Date()
+        };
+        
+        onAddMessage(botResponse);
+        
       } else {
         throw new Error(response.message || 'Erro na resposta da API');
       }
@@ -93,7 +94,7 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
       }
       
       const errorResponse: Message = {
-        id: messages.length + 3,
+        id: generateUniqueId(),
         content: errorMessage,
         sender: 'bot',
         timestamp: new Date()
