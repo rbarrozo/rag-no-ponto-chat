@@ -52,38 +52,34 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
     setInputValue("");
     setIsLoading(true);
 
-    // Adicionar mensagem temporária de carregamento
-    const loadingMessage: Message = {
-      id: messages.length + 2,
-      content: "Pensando...",
-      sender: 'bot',
-      timestamp: new Date()
-    };
-    onAddMessage(loadingMessage);
-
     try {
       const response = await authService.makeAuthenticatedRequest('/ask', {
         method: 'POST',
         body: JSON.stringify({ question: sanitizedInput }),
       });
 
-      if (response.success && response.data) {
-        const responseText = response.data.answer?.content || "Desculpe, não consegui entender.";
-        
-        // Sanitize the response to prevent XSS
-        const cleanText = sanitizeHtml(responseText)
-          .replace(/\*\*(.*?)\*\*/g, "$1")  // remove negrito markdown **texto**
-          .replace(/\*(.*?)\*/g, "$1");     // remove itálico markdown *texto*
 
-        // Criar resposta real do bot
-        const botResponse: Message = {
-          id: messages.length + 3,
-          content: cleanText,
-          sender: 'bot',
-          timestamp: new Date()
-        };
-        
-        onAddMessage(botResponse);
+		if (response.success && response.data) {
+			
+			console.log(response.data)
+			//console.log(response.data)
+			const responseText = response.data.answer || "Desculpe, não consegui entender.";
+			
+			// Sanitize the response to prevent XSS
+			const cleanText = sanitizeHtml(responseText)
+			  .replace(/\*\*(.*?)\*\*/g, "$1")  // remove negrito markdown **texto**
+			  .replace(/\*(.*?)\*/g, "$1");     // remove itálico markdown *texto*
+
+			// Criar resposta real do bot
+			const botResponse: Message = {
+			  id: messages.length + 3,
+			  content: cleanText,
+			  sender: 'bot',
+			  timestamp: new Date()
+			};
+			
+			onAddMessage(botResponse);
+			
       } else {
         throw new Error(response.message || 'Erro na resposta da API');
       }
@@ -128,8 +124,8 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
           >
             {message.sender === 'bot' && (
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
+				<img src="no-ponto-white-16-16.png" alt="Logo No Ponto" className="w-4 h-4" />
+			  </div>
             )}
             <div
               className={`max-w-3xl px-4 py-3 rounded-lg ${
