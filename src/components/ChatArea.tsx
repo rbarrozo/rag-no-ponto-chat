@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,11 @@ interface ChatAreaProps {
   messages: Message[];
   onAddMessage: (message: Message) => void;
 }
+
+// Função para processar markdown básico
+const processMarkdown = (text: string) => {
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+};
 
 export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
   const [inputValue, setInputValue] = useState("");
@@ -68,10 +72,8 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
         console.log(response.data)
         const responseText = response.data.answer || "Desculpe, não consegui entender.";
         
-        // Sanitize the response to prevent XSS
-        const cleanText = sanitizeHtml(responseText)
-          .replace(/\*\*(.*?)\*\*/g, "$1")  // remove negrito markdown **texto**
-          .replace(/\*(.*?)\*/g, "$1");     // remove itálico markdown *texto*
+        // Sanitize the response to prevent XSS but keep basic formatting
+        const cleanText = sanitizeHtml(responseText);
 
         // Criar resposta real do bot
         const botResponse: Message = {
@@ -139,7 +141,16 @@ export const ChatArea = ({ messages, onAddMessage }: ChatAreaProps) => {
                       : 'bg-white border border-gray-200 text-gray-900'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  {message.sender === 'bot' ? (
+                    <div 
+                      className="whitespace-pre-wrap"
+                      dangerouslySetInnerHTML={{ 
+                        __html: processMarkdown(message.content) 
+                      }}
+                    />
+                  ) : (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  )}
                   <div className={`text-xs mt-2 ${
                     message.sender === 'user' ? 'text-green-100' : 'text-gray-500'
                   }`}>
