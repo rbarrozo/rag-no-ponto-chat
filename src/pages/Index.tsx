@@ -1,15 +1,8 @@
-
 import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { ChatArea } from "@/components/ChatArea";
 import { Header } from "@/components/Header";
-
-interface Message {
-  id: number;
-  content: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
-}
+import { Message } from "@/types/chat";
 
 interface Conversation {
   id: number;
