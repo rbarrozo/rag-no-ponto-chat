@@ -93,7 +93,7 @@ const Help = () => {
           </div>
 
           {/* Contact Section */}
-          <div className="mt-12 p-6 bg-green-50 rounded-lg">
+          <div className="mt-12 p-6 bg-red-50 rounded-lg">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Ainda precisa de ajuda?
             </h2>

@@ -15,14 +15,14 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       }`}
     >
       {message.sender === 'bot' && (
-        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
           <img src="no-ponto-white-16-16.png" alt="Logo No Ponto" className="w-4 h-4" />
         </div>
       )}
       <div
         className={`max-w-3xl px-4 py-3 rounded-lg ${
           message.sender === 'user'
-            ? 'bg-green-500 text-white'
+            ? 'bg-red-500 text-white'
             : 'bg-white border border-gray-200 text-gray-900'
         }`}
       >
@@ -37,7 +37,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           <p className="whitespace-pre-wrap">{message.content}</p>
         )}
         <div className={`text-xs mt-2 ${
-          message.sender === 'user' ? 'text-green-100' : 'text-gray-500'
+          message.sender === 'user' ? 'text-red-100' : 'text-gray-500'
         }`}>
           {message.timestamp.toLocaleTimeString()}
         </div>

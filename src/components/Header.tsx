@@ -15,7 +15,7 @@ export const Header = ({ onToggleSidebar }: HeaderProps) => {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mr-3">
           <Bot className="w-4 h-4 text-white" />
         </div>
         <div>

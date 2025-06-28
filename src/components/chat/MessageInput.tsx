@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,14 +107,14 @@ export const MessageInput = ({ onAddMessage, isLoading, setIsLoading }: MessageI
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Digite sua mensagem..."
-              className="min-h-[60px] max-h-32 resize-none border-gray-300 focus:border-green-500 focus:ring-green-500"
+              className="min-h-[60px] max-h-32 resize-none border-gray-300 focus:border-red-500 focus:ring-red-500"
               disabled={isLoading}
             />
           </div>
           <Button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 h-[60px]"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-3 h-[60px]"
           >
             <Send className="w-5 h-5" />
           </Button>
